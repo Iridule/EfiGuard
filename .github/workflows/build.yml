@@ -29,13 +29,30 @@ jobs:
           cd edk2
           cmd /c "edksetup.bat Rebuild"
 
-      - name: Compile EfiGuard Binaries
+      - name: Compile EfiGuard DXE Drivers (.efi)
         run: |
           cd edk2
           cmd /c "edksetup.bat && build -a X64 -t VS2022 -p EfiGuardPkg/EfiGuardPkg.dsc -b RELEASE"
 
-      - name: Upload Compiled Artifacts
+      - name: Setup MSBuild for Windows Applications
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Compile EfiDSEFix Application (.exe)
+        run: |
+          # Use MSBuild to explicitly compile the Windows user-mode application targets
+          msbuild edk2/EfiGuardPkg/EfiGuard.sln /p:Configuration=Release /p:Platform=x64
+
+      - name: Consolidate Final Output Binaries
+        run: |
+          # Create a single clean folder to drop all the final working files into
+          mkdir dist
+          copy edk2\Build\EfiGuard\RELEASE_VS2022\X64\EfiGuardDxe.efi dist\
+          copy edk2\Build\EfiGuard\RELEASE_VS2022\X64\Loader.efi dist\
+          copy edk2\EfiGuardPkg\x64\Release\EfiDSEFix.exe dist\
+          copy edk2\EfiGuardPkg\x64\Release\Loader.exe dist\
+
+      - name: Upload Complete EfiGuard Bundle
         uses: actions/upload-artifact@v4
         with:
-          name: EfiGuard-Latest-Fixed
-          path: edk2/Build/EfiGuard/RELEASE_VS2022/X64/
+          name: EfiGuard-Complete-Pack
+          path: dist/
