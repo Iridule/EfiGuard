@@ -39,12 +39,11 @@ jobs:
 
       - name: Compile EfiDSEFix Application (.exe)
         run: |
-          # Use MSBuild to explicitly compile the Windows user-mode application targets
-          msbuild edk2/EfiGuardPkg/EfiGuard.sln /p:Configuration=Release /p:Platform=x64
+          # Force MSBuild to use the VS2022 toolset (v143) to match our windows-2022 server
+          msbuild edk2/EfiGuardPkg/EfiGuard.sln /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v143
 
       - name: Consolidate Final Output Binaries
         run: |
-          # Create a single clean folder to drop all the final working files into
           mkdir dist
           copy edk2\Build\EfiGuard\RELEASE_VS2022\X64\EfiGuardDxe.efi dist\
           copy edk2\Build\EfiGuard\RELEASE_VS2022\X64\Loader.efi dist\
