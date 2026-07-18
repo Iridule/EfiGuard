@@ -1,0 +1,32 @@
+name: Build EfiGuard
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout EDK2
+        run: |
+          git clone --recursive https://github.com/tianocore/edk2.git edk2
+          
+      - name: Checkout EfiGuard into Workspace
+        run: |
+          cd edk2
+          git clone https://github.com/${{ github.repository }}.git EfiGuardPkg
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Compile EfiGuard Binaries
+        run: |
+          cd edk2
+          # Initialize EDK2 build environment and launch compile flags
+          cmd /c "edksetup.bat && build -a X64 -t VS2022 -p EfiGuardPkg/EfiGuardPkg.dsc -b RELEASE"
+
+      - name: Upload Compiled Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: EfiGuard-Latest-Fixed
+          path: edk2/Build/EfiGuard/RELEASE_VS2022/X64/
