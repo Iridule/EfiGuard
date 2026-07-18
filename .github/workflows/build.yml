@@ -3,7 +3,7 @@ on: [push, workflow_dispatch]
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2022
     steps:
       - name: Install Assembly Tools (NASM)
         run: |
@@ -27,7 +27,6 @@ jobs:
       - name: Compile EDK2 BaseTools
         run: |
           cd edk2
-          # The correct command to rebuild the C tools in modern EDK2
           cmd /c "edksetup.bat Rebuild"
 
       - name: Compile EfiGuard Binaries
