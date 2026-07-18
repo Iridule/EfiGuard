@@ -39,16 +39,15 @@ jobs:
 
       - name: Compile EfiDSEFix Application (.exe)
         run: |
-          # Force MSBuild to use the VS2022 toolset (v143) to match our windows-2022 server
           msbuild edk2/EfiGuardPkg/EfiGuard.sln /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v143
 
       - name: Consolidate Final Output Binaries
         run: |
           mkdir dist
-          copy edk2\Build\EfiGuard\RELEASE_VS2022\X64\EfiGuardDxe.efi dist\
-          copy edk2\Build\EfiGuard\RELEASE_VS2022\X64\Loader.efi dist\
-          copy edk2\EfiGuardPkg\x64\Release\EfiDSEFix.exe dist\
-          copy edk2\EfiGuardPkg\x64\Release\Loader.exe dist\
+          # Let PowerShell hunt down the files dynamically so we don't have to guess the folder paths!
+          Get-ChildItem -Path edk2 -Filter EfiGuardDxe.efi -Recurse | Copy-Item -Destination dist\
+          Get-ChildItem -Path edk2 -Filter Loader.efi -Recurse | Copy-Item -Destination dist\
+          Get-ChildItem -Path edk2 -Filter EfiDSEFix.exe -Recurse | Copy-Item -Destination dist\
 
       - name: Upload Complete EfiGuard Bundle
         uses: actions/upload-artifact@v4
