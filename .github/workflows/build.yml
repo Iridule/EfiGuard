@@ -9,20 +9,27 @@ jobs:
         run: |
           git clone --recursive https://github.com/tianocore/edk2.git edk2
           
-      - name: Checkout EfiGuard into Workspace
+      - name: Checkout EfiGuard with Submodules
         run: |
           cd edk2
-          git clone https://github.com/${{ github.repository }}.git EfiGuardPkg
+          # The --recursive flag here is the magic trick to pull in Zydis
+          git clone --recursive https://github.com/${{ github.repository }}.git EfiGuardPkg
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
 
+      - name: Compile EDK2 BaseTools
+        run: |
+          cd edk2
+          # This builds the missing BaseTools Bin Win32 components
+          cmd /c "edksetup.bat && RebuildTools.bat"
+
       - name: Compile EfiGuard Binaries
         run: |
           cd edk2
-          # Initialize EDK2 build environment and launch compile flags
+          # Compiles the final EFI binaries using Visual Studio 2022
           cmd /c "edksetup.bat && build -a X64 -t VS2022 -p EfiGuardPkg/EfiGuardPkg.dsc -b RELEASE"
 
       - name: Upload Compiled Artifacts
